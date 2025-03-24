@@ -3,9 +3,11 @@ package com.example.demo.controller;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -48,4 +50,68 @@ public class CategoryController {
 
         return ResponseEntity.ok(post.get());
     }
+
+    // Delleting bookings
+    //DELETE
+    @DeleteMapping("/bookings/{id}")
+    public ResponseEntity<Void> deleteBooking(@PathVariable Long id) {
+        var bookingToRemove = bookings
+                .stream()
+                .filter(p -> p.getId().equals(id))
+                .findFirst();
+
+        if (bookingToRemove.isPresent()) {
+            bookings.remove(bookingToRemove.get());
+            System.out.println("Booking deleted: " + id);
+            return ResponseEntity.noContent().build();
+        } else {
+            System.out.println("Booking not found: " + id);
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    //Updatting Booking
+    //PUT
+
+    @PutMapping("/bookings/{id}")
+public ResponseEntity<Booking> updateBooking(@PathVariable Long id, @RequestBody Booking updatedBooking) {
+    var existingBooking = bookings
+            .stream()
+            .filter(p -> p.getId().equals(id))
+            .findFirst();
+
+    if (existingBooking.isPresent()) {
+        //Get the booking
+        Booking booking = existingBooking.get();
+
+        // Gert the ID, to make the update
+        Booking updated = new Booking(
+                booking.getId(), 
+                updatedBooking.getUser(), 
+                updatedBooking.getTelefoneCliente(), 
+                updatedBooking.getEmailCliente(), 
+                updatedBooking.getDataReserva(), 
+                updatedBooking.getHoraReserva(), 
+                updatedBooking.getQuantidadePessoas(), 
+                updatedBooking.getStatus(), 
+                updatedBooking.getMesa() 
+        );
+
+        // Remove the old booking
+        bookings.remove(booking);
+
+        // Updatting the new booking
+        bookings.add(updated);
+
+        System.out.println("Booking updated: " + id);
+        return ResponseEntity.ok(updated);
+    } else {
+        System.out.println("Booking not found: " + id);
+        return ResponseEntity.notFound().build();
+    }
+}
+
+
+
+
 }
